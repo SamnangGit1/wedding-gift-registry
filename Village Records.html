@@ -1,7 +1,8 @@
 <!DOCTYPE html>
-<html lang="km">
+<html lang="km" translate="no" class="notranslate">
 <head>
 <meta charset="utf-8">
+<meta name="google" content="notranslate">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Village Records · សៀវភៅកត់ចំណងដៃអាពាហ៍ពិពាហ៍</title>
 <link href="https://fonts.googleapis.com/css2?family=Siemreap&family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Kantumruy+Pro:wght@400;600;700&display=swap" rel="stylesheet">
@@ -104,7 +105,7 @@ label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin:10p
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
-<body>
+<body translate="no" class="notranslate">
 <div class="wrap">
   <div class="print-header">
     <h2 style="margin:0;font-size:20pt;color:#0b8f6a">សៀវភៅកត់ត្រាចំណងដៃអាពាហ៍ពិពាហ៍</h2>
@@ -300,8 +301,21 @@ if (!Array.isArray(data)) data = [];
 function save(){
   try { localStorage.setItem(KEY, JSON.stringify(data)); } catch(e){}
 }
+function cleanPrice(p){
+  if (typeof p === "number") return isNaN(p) ? 0 : p;
+  var s = String(p || "").replace(/,/g, "").replace(/[^0-9.]/g, "");
+  return parseFloat(s) || 0;
+}
+function normCurrency(c){
+  var s = String(c || "").trim().toUpperCase();
+  if (s === "KHR" || s === "៛" || s.indexOf("រៀល") > -1) return "KHR";
+  return "USD";
+}
 function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
-function fmt(n){ return Number(n||0).toLocaleString(undefined, { minimumFractionDigits: (n % 1 === 0 ? 0 : 2), maximumFractionDigits: 2 }); }
+function fmt(n){
+  var num = cleanPrice(n);
+  return num.toLocaleString(undefined, { minimumFractionDigits: (num % 1 === 0 ? 0 : 2), maximumFractionDigits: 2 });
+}
 function esc(s){ return String(s == null ? "" : s).replace(/[&<>"]/g, function(c){ return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
 
 function toast(m, k){
@@ -333,22 +347,28 @@ function updateSyncBadge(){
 function view(){
   var q = $("q").value.trim().toLowerCase();
   var fc = $("fc").value, fv = $("fv").value, cu = $("fcur").value;
-  var mn = parseFloat($("pmin").value), mx = parseFloat($("pmax").value);
+  var mnVal = $("pmin").value.replace(/,/g, "").trim();
+  var mxVal = $("pmax").value.replace(/,/g, "").trim();
+  var mn = mnVal === "" ? NaN : parseFloat(mnVal);
+  var mx = mxVal === "" ? NaN : parseFloat(mxVal);
 
   var r = data.filter(function(x){
+    var cur = normCurrency(x.currency);
+    var p = cleanPrice(x.price);
     return (!fc || x.commune === fc) &&
            (!fv || x.village === fv) &&
-           (!cu || (x.currency || "USD") === cu) &&
-           (isNaN(mn) || x.price >= mn) &&
-           (isNaN(mx) || x.price <= mx) &&
-           (!q || [x.name, x.village, x.commune, x.note, x.user].join(" ").toLowerCase().indexOf(q) > -1);
+           (!cu || cur === cu) &&
+           (isNaN(mn) || p >= mn) &&
+           (isNaN(mx) || p <= mx) &&
+           (!q || [x.name, x.village, x.commune, x.note, x.user, cur, p].join(" ").toLowerCase().indexOf(q) > -1);
   });
 
   r.sort(function(a, b){
     var A = a[sort.k], B = b[sort.k];
     if (sort.k === "price") {
-      var ca = a.currency || "USD", cb = b.currency || "USD";
-      return (ca === cb ? a.price - b.price : (ca === "USD" ? -1 : 1)) * sort.d;
+      var ca = normCurrency(a.currency), cb = normCurrency(b.currency);
+      var pa = cleanPrice(a.price), pb = cleanPrice(b.price);
+      return (ca === cb ? pa - pb : (ca === "USD" ? -1 : 1)) * sort.d;
     }
     if (sort.k === "no") {
       return ((a.no || 0) - (b.no || 0)) * sort.d;
@@ -377,20 +397,23 @@ function render(){
 
   var r = view(), tu = 0, tk = 0;
   r.forEach(function(x){
-    if (x.currency === "KHR") tk += x.price;
-    else tu += x.price;
+    var p = cleanPrice(x.price);
+    if (normCurrency(x.currency) === "KHR") tk += p;
+    else tu += p;
   });
 
   $("tb").innerHTML = r.map(function(x, idx){
-    var moneyStr = x.currency === "KHR" ? fmt(x.price) + " ៛" : "$" + fmt(x.price);
+    var p = cleanPrice(x.price);
+    var cur = normCurrency(x.currency);
+    var moneyStr = cur === "KHR" ? fmt(p) + " ៛" : "$" + fmt(p);
     return '<tr>' +
       '<td style="color:var(--muted)">' + (x.no || (r.length - idx)) + '</td>' +
-      '<td><b>' + esc(x.name) + '</b></td>' +
-      '<td>' + esc(x.village) + '</td>' +
-      '<td>' + esc(x.commune) + '</td>' +
+      '<td><b class="notranslate" translate="no">' + esc(x.name) + '</b></td>' +
+      '<td><span class="notranslate" translate="no">' + esc(x.village) + '</span></td>' +
+      '<td><span class="notranslate" translate="no">' + esc(x.commune) + '</span></td>' +
       '<td class="n"><b>' + moneyStr + '</b></td>' +
       '<td><span class="user-tag">' + esc(cleanUser(x.user)) + '</span></td>' +
-      '<td class="note">' + esc(x.note) + '</td>' +
+      '<td class="note notranslate" translate="no">' + esc(x.note) + '</td>' +
       '<td class="act"><button class="btn sm" data-e="' + x.id + '">កែប្រែ</button> <button class="btn sm del" data-d="' + x.id + '">លុប</button></td>' +
     '</tr>';
   }).join("");
@@ -410,8 +433,8 @@ function openForm(id){
   $("iName").value = x.name;
   $("iVil").value = x.village;
   $("iCom").value = x.commune;
-  $("iPrice").value = x.price;
-  $("iCur").value = x.currency || "USD";
+  $("iPrice").value = cleanPrice(x.price) || "";
+  $("iCur").value = normCurrency(x.currency);
   $("iNote").value = x.note || "";
   $("dForm").showModal();
   $("iName").focus();
@@ -439,8 +462,8 @@ $("f").addEventListener("submit", function(e){
     name: $("iName").value.trim(),
     village: $("iVil").value.trim(),
     commune: $("iCom").value.trim(),
-    price: parseFloat($("iPrice").value) || 0,
-    currency: $("iCur").value,
+    price: cleanPrice($("iPrice").value),
+    currency: normCurrency($("iCur").value),
     note: $("iNote").value.trim(),
     user: currentUser,
     timestamp: new Date().toLocaleString()
@@ -828,8 +851,8 @@ function syncRemoteRecords(remoteRecords){
       name: r.name || "",
       village: r.village || "",
       commune: r.commune || "",
-      price: parseFloat(r.price) || 0,
-      currency: r.currency || "USD",
+      price: cleanPrice(r.price),
+      currency: normCurrency(r.currency),
       note: r.note || "",
       user: cleanUser(r.user),
       timestamp: r.timestamp || ""

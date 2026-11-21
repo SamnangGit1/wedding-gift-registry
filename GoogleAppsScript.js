@@ -160,8 +160,9 @@ function doPost(e) {
 
     for (var i = 0; i < records.length; i++) {
       var r = records[i];
-      var price = parseFloat(r.price) || 0;
-      var currency = (r.currency || "USD").toUpperCase();
+      var price = parseFloat(String(r.price).replace(/,/g, "")) || 0;
+      var currency = String(r.currency || "USD").toUpperCase();
+      if (currency === "៛" || currency.indexOf("រៀល") > -1) currency = "KHR";
       if (currency !== "KHR" && currency !== "USD") currency = "USD";
       rowsToAdd.push([(startRow - 5) + i, r.name || "", r.village || "", r.commune || "", price, currency, r.note || "", r.user || "User 1", r.timestamp || now]);
     }
@@ -199,14 +200,17 @@ function doGet(e) {
     for (var i = 0; i < data.length; i++) {
       var row = data[i];
       if (!row[1] && !row[4]) continue;
+      var cur = String(row[5] || "USD").toUpperCase();
+      if (cur === "៛" || cur.indexOf("រៀល") > -1) cur = "KHR";
+      if (cur !== "KHR" && cur !== "USD") cur = "USD";
       records.push({
         id: "gs_" + row[0],
         no: row[0],
         name: String(row[1] || "").trim(),
         village: String(row[2] || "").trim(),
         commune: String(row[3] || "").trim(),
-        price: parseFloat(row[4]) || 0,
-        currency: String(row[5] || "USD").toUpperCase(),
+        price: parseFloat(String(row[4] || 0).replace(/,/g, "")) || 0,
+        currency: cur,
         note: String(row[6] || "").trim(),
         user: String(row[7] || "User 1").trim(),
         timestamp: String(row[8] || "")
