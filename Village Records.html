@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Village Records · សៀវភៅកត់ចំណងដៃអាពាហ៍ពិពាហ៍</title>
+<link href="https://fonts.googleapis.com/css2?family=Siemreap&family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Kantumruy+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="html2pdf.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="exceljs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<style>
+:root{
+  --bg:#eef3f7;--surface:#fff;--ink:#12202e;--muted:#5d6f80;--line:#dbe4ec;
+  --acc:#0b8f6a;--acc-ink:#fff;--danger:#c9383d;--soft:#e3f4ee;--gs:#0f9d58;--gs-ink:#fff;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0d1620;--surface:#15222f;--ink:#e8eff5;--muted:#8fa3b5;--line:#243546;
+    --acc:#2fc89a;--acc-ink:#06241a;--danger:#ff7a7f;--soft:#12332b;--gs:#34a853
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0d1620;--surface:#15222f;--ink:#e8eff5;--muted:#8fa3b5;--line:#243546;
+  --acc:#2fc89a;--acc-ink:#06241a;--danger:#ff7a7f;--soft:#12332b;--gs:#34a853
+}
+*{box-sizing:border-box}
+body, input, select, textarea, button, dialog, table {
+  font-family: "Khmer OS Siemreap", "Siemreap", "Kantumruy Pro", "Plus Jakarta Sans", system-ui, sans-serif;
+}
+body{margin:0;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.6}
+.wrap{max-width:1160px;margin:0 auto;padding:24px 16px 56px}
+header{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:20px}
+h1{font-size:25px;font-weight:700;letter-spacing:-.01em;margin:0}
+.sub{color:var(--muted);margin:2px 0 0;font-size:13.5px}
+.btn{font:inherit;font-weight:600;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:8px 14px;border-radius:10px;cursor:pointer;transition:transform .12s,background .12s;display:inline-flex;align-items:center;gap:6px;text-decoration:none}
+.btn:hover{background:var(--soft)}.btn:active{transform:scale(.97)}
+.btn.pri{background:var(--acc);color:var(--acc-ink);border-color:var(--acc)}
+.btn.pri:hover{filter:brightness(1.07)}
+.btn.gs{background:var(--gs);color:var(--gs-ink);border-color:var(--gs)}
+.btn.gs:hover{filter:brightness(1.08)}
+.btn.del{color:var(--danger)}
+.btn.sm{padding:4px 9px;font-size:13px}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:16px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.stat b{display:block;font-size:24px;font-weight:700;letter-spacing:-.02em}
+.stat span{color:var(--muted);font-size:13px}
+.stat.hi{background:var(--acc);color:var(--acc-ink);border-color:var(--acc)}.stat.hi span{color:inherit;opacity:.88}
+.bar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+input,select,textarea{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 12px;width:100%}
+.bar input{flex:1 1 200px;width:auto}.bar select{flex:0 1 170px;width:auto}.bar input.pr{flex:0 1 110px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:760px}
+th,td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--line)}
+th{font-size:13.5px;color:var(--muted);font-weight:600;cursor:pointer;user-select:none;white-space:nowrap}
+th:hover{color:var(--ink)}
+tr:last-child td{border-bottom:0}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+td .note{color:var(--muted);font-size:13px}
+td.act{white-space:nowrap;text-align:right}
+.empty{padding:40px 16px;text-align:center;color:var(--muted)}
+dialog{border:1px solid var(--line);border-radius:16px;background:var(--surface);color:var(--ink);padding:22px;width:min(540px,94vw);max-height:88vh;overflow-y:auto}
+dialog.wide{width:min(720px,95vw)}
+dialog::backdrop{background:rgba(5,12,20,.65)}
+dialog h2{margin:0 0 14px;font-size:20px}
+label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin:10px 0 4px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.foot{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
+.toast{position:fixed;right:16px;top:calc(16px + env(safe-area-inset-top,0px));z-index:50;max-width:calc(100vw - 32px);background:var(--acc);color:var(--acc-ink);padding:12px 18px;border-radius:12px;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,.25);opacity:0;transform:translateX(24px);pointer-events:none;transition:opacity .25s,transform .25s}
+.toast.on{opacity:1;transform:none}
+.toast.warn{background:#d97706}
+.toast.err{background:var(--danger)}
+.fh{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}.fh h2{margin:0}
+.x{font:inherit;font-size:18px;line-height:1;width:34px;height:34px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}.x:hover{background:var(--soft)}
+.guide-box{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-top:12px;font-size:13px;line-height:1.6}
+.guide-box ol{margin:6px 0 0;padding-left:20px}
+.code-area{font-family:monospace;font-size:11px;background:#0f172a;color:#e2e8f0;padding:10px;border-radius:8px;border:1px solid var(--line);max-height:150px;overflow-y:auto;white-space:pre}
+.badge-status{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:8px;font-size:12px;font-weight:700}
+.badge-status.on{background:#dcfce7;color:#15803d}
+.badge-status.off{background:#f1f5f9;color:#64748b}
+.pulse-dot{width:8px;height:8px;border-radius:50%;background:#15803d;display:inline-block;animation:pulse 1.6s infinite}
+@keyframes pulse{0%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(1.2)}100%{opacity:1;transform:scale(1)}}
+.user-tag{display:inline-block;background:#e0f2fe;color:#0369a1;padding:2px 8px;border-radius:6px;font-size:11.5px;font-weight:600}
+.print-header{display:none}
+@media print {
+  body { background:#fff !important; color:#000 !important; font-size:11pt !important; }
+  header, .bar, .actions, dialog, .toast, #syncBadge, #syncText, #sSyncStatus, td.act, th:last-child { display:none !important; }
+  .wrap { max-width:100% !important; padding:0 !important; margin:0 !important; }
+  .card { border:none !important; box-shadow:none !important; }
+  .print-header { display:block !important; margin-bottom:16px; text-align:center; }
+  .stats { grid-template-columns:repeat(3, 1fr) !important; margin-bottom:16px !important; }
+  .stat:last-child { display:none !important; }
+  table { width:100% !important; border-collapse:collapse !important; }
+  th { background:#0b8f6a !important; color:#fff !important; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  th, td { border:1px solid #cbd5e1 !important; padding:6px 10px !important; }
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="print-header">
+    <h2 style="margin:0;font-size:20pt;color:#0b8f6a">សៀវភៅកត់ត្រាចំណងដៃអាពាហ៍ពិពាហ៍</h2>
+    <p style="margin:4px 0;color:#555">Wedding Gift Records · កាលបរិច្ឆេទបោះពុម្ព: <span id="printDate"></span></p>
+  </div>
+  <header>
+    <div>
+      <h1>Village records · សៀវភៅចំណងដៃអាពាហ៍ពិពាហ៍</h1>
+      <p class="sub">Font: Khmer OS Siemreap · គាំទ្រការបញ្ចូលទិន្នន័យ 3-4 នាក់ព្រមគ្នា Real-time</p>
+    </div>
+    <div class="actions">
+      <!-- Current Cashier / Device selector -->
+      <div style="display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--line);padding:4px 8px;border-radius:10px">
+        <span style="font-size:12px;color:var(--muted);white-space:nowrap">User:</span>
+        <select id="selUser" style="width:auto;padding:3px 8px;font-size:13px;border:none;background:transparent;font-weight:700">
+          <option value="User 1">User 1</option>
+          <option value="User 2">User 2</option>
+          <option value="User 3">User 3</option>
+          <option value="User 4">User 4</option>
+        </select>
+      </div>
+
+      <button class="btn gs" id="bCopySheet" title="ចម្លងទិន្នន័យដើម្បីបិទភ្ជាប់ (Paste) ក្នុង Google Sheet ភ្លាមៗ" style="background:#1a73e8;border-color:#1a73e8;color:#fff">
+        📋 Copy for Google Sheet
+      </button>
+
+      <button class="btn gs" id="bGoogle" title="ភ្ជាប់ Google Sheets និងកំណត់ Real-Time Sync">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM7 7h10v2H7zm0 4h10v2H7zm0 4h7v2H7z"/></svg>
+        Google Sheets Sync
+      </button>
+
+      <button class="btn" id="bXlsx" title="ទាញយកជាឯកសារ Excel (Khmer OS Siemreap) ស្អាតឥតខ្ចោះ">
+        📊 Export Excel (.xlsx)
+      </button>
+      <button class="btn" id="bPdf">Export PDF</button>
+      <button class="btn pri" id="bAdd">+ កត់ចំណងដៃ</button>
+    </div>
+  </header>
+
+  <div class="stats">
+    <div class="stat hi"><b id="sTotal">$0.00</b><span>សរុបដុល្លារ (Total USD)</span></div>
+    <div class="stat"><b id="sKhr">0 ៛</b><span>សរុបរៀល (Total KHR)</span></div>
+    <div class="stat"><b id="sCount">0</b><span>ចំនួនភ្ញៀវសរុប (Total Guests)</span></div>
+    <div class="stat">
+      <b id="sSyncStatus"><span class="badge-status off" id="syncBadge">Offline</span></b>
+      <span id="syncText">ស្ថានភាព Google Sheet Real-Time</span>
+    </div>
+  </div>
+
+  <div class="bar">
+    <input id="q" type="search" placeholder="ស្វែងរកឈ្មោះ, ភូមិ, ឃុំ ឬចំណាំ..." aria-label="Search">
+    <select id="fv" aria-label="Filter by village"><option value="">ភូមិទាំងអស់ (All villages)</option></select>
+    <select id="fc" aria-label="Filter by commune"><option value="">ឃុំទាំងអស់ (All communes)</option></select>
+    <select id="fcur" aria-label="Filter by currency">
+      <option value="">រូបិយប័ណ្ណទាំងអស់ (USD &amp; ៛)</option>
+      <option value="USD">ប្រាក់ដុល្លារ ($) តែប៉ុណ្ណោះ</option>
+      <option value="KHR">ប្រាក់រៀល (៛) តែប៉ុណ្ណោះ</option>
+    </select>
+    <input id="pmin" class="pr" type="number" min="0" step="any" placeholder="តម្លៃទាបបំផុត">
+    <input id="pmax" class="pr" type="number" min="0" step="any" placeholder="តម្លៃខ្ពស់បំផុត">
+    <button class="btn" id="fClear">សម្អាត</button>
+  </div>
+
+  <div class="card"><div class="scroll">
+    <table>
+      <thead><tr>
+        <th data-k="no" style="width:50px">ល.រ</th>
+        <th data-k="name">ឈ្មោះអ្នកចងដៃ (Guest Name)</th>
+        <th data-k="village">ភូមិ (Village)</th>
+        <th data-k="commune">ឃុំ / សង្កាត់ (Commune)</th>
+        <th data-k="price" class="n">ចំនួនទឹកប្រាក់ (Amount)</th>
+        <th data-k="user">អ្នកកត់ត្រា</th>
+        <th data-k="note">ចំណាំ (Note)</th>
+        <th style="text-align:right">សកម្មភាព</th>
+      </tr></thead>
+      <tbody id="tb"></tbody>
+    </table>
+  </div>
+  <div class="empty" id="empty" hidden>មិនទាន់មានទិន្នន័យនៅឡើយទេ។ សូមចុចប៊ូតុង «+ កត់ចំណងដៃ» ដើម្បីចាប់ផ្តើម!</div></div>
+</div>
+
+<!-- Add / Edit Dialog -->
+<dialog id="dForm"><form method="dialog" id="f">
+  <div class="fh"><h2 id="fT">កត់ចំណងដៃថ្មី</h2><button type="button" class="x" id="fX" aria-label="Close form">✕</button></div>
+  <label for="iName">ឈ្មោះអ្នកចងដៃ *</label>
+  <input id="iName" required placeholder="ឧទាហរណ៍៖ សុខ ចាន់ដារា / Sok Chandara" autofocus>
+  
+  <div class="row2">
+    <div><label for="iVil">ភូមិ *</label><input id="iVil" required placeholder="ឧទាហរណ៍៖ ត្រពាំងថ្លឹង"></div>
+    <div><label for="iCom">ឃុំ / សង្កាត់</label><input id="iCom" placeholder="ឧទាហរណ៍៖ ចោមចៅ"></div>
+  </div>
+  
+  <div class="row2" style="grid-template-columns:1.4fr 1fr">
+    <div><label for="iPrice">ចំនួនទឹកប្រាក់ *</label><input id="iPrice" type="number" min="0" step="any" required placeholder="0"></div>
+    <div>
+      <label for="iCur">រូបិយប័ណ្ណ</label>
+      <select id="iCur">
+        <option value="USD">ដុល្លារ ($)</option>
+        <option value="KHR">រៀល (៛)</option>
+      </select>
+    </div>
+  </div>
+
+  <label for="iNote">ចំណាំ / ត្រូវជា (Note)</label>
+  <textarea id="iNote" rows="2" placeholder="ឧទាហរណ៍៖ មិត្តភក្តិ, បងប្អូនជីដូនមួយ, មិត្តរួមការងារ..."></textarea>
+
+  <div class="foot">
+    <button type="button" class="btn" id="fCancel">បិទ</button>
+    <button class="btn pri" type="submit" id="fSave">រក្សាទុក និងកត់បន្ត (Save)</button>
+  </div>
+</form></dialog>
+
+<!-- Google Sheets Live Sync Dialog -->
+<dialog id="dGoogle" class="wide">
+  <div class="fh">
+    <h2>ការភ្ជាប់ Google Sheets &amp; Real-Time Multi-User (3-4 នាក់)</h2>
+    <button type="button" class="x" id="gX" aria-label="Close">✕</button>
+  </div>
+  <p class="sub">ប្រព័ន្ធនេះជួយឱ្យអ្នកកត់ត្រា 3 ទៅ 4 នាក់ (តុ ១, តុ ២, តុ ៣...) អាចកត់ត្រាចូល Google Sheet ក្នុងពេលដំណាលគ្នាក្នុង Real-Time ដោយមិនជាន់ទិន្នន័យគ្នា!</p>
+
+  <label>Google Sheet របស់អ្នក (Your Google Sheet)</label>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <input id="gsSheetUrl" readonly value="https://docs.google.com/spreadsheets/d/1nMmJ7VBqVhFn6Efu_0Rm3clNxsbLBhAyluWpcGU1W58/edit?usp=sharing">
+    <a href="https://docs.google.com/spreadsheets/d/1nMmJ7VBqVhFn6Efu_0Rm3clNxsbLBhAyluWpcGU1W58/edit?usp=sharing" target="_blank" class="btn pri" style="white-space:nowrap">បើក Google Sheet ↗</a>
+  </div>
+
+  <label for="gsUrl">Google Apps Script Web App URL (URL សម្រាប់ Real-time Sync)</label>
+  <input id="gsUrl" value="https://script.google.com/macros/s/AKfycbygo7FujFcI9Zzd8IoAoGYg2a_0EAiZfz6sCC_WhbtQORIcfjAK1VX-em7FUTz4Y113-w/exec" placeholder="https://script.google.com/macros/s/.../exec">
+  
+  <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
+    <input type="checkbox" id="gsAutoSync" style="width:auto;margin:0" checked>
+    <label for="gsAutoSync" style="margin:0;cursor:pointer;font-weight:700">បើកដំណើរការ Real-Time Auto-Sync (កត់ត្រាភ្លាម រត់ចូល Google Sheet ភ្លាម)</label>
+  </div>
+
+  <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:14px">
+    <button class="btn gs" id="gsBtnPush">⬆ បញ្ជូនទិន្នន័យចាស់ទាំងអស់ទៅ Google Sheet (Push All)</button>
+    <button class="btn" id="gsBtnPull">⬇ ទាញយកទិន្នន័យពី Google Sheet មកវិញ (Pull)</button>
+    <button class="btn pri" id="gsBtnSaveUrl">រក្សាទុកការកំណត់ (Save)</button>
+  </div>
+
+  <div class="guide-box">
+    <b>របៀបដំឡើង Real-time Apps Script ក្នុង Google Sheet របស់អ្នក៖</b>
+    <ol>
+      <li>បើក Google Sheet របស់អ្នក រួចចុច <b>ផ្នែកបន្ថែម (Extensions)</b> ➔ <b>Apps Script</b></li>
+      <li>លុបកូដចាស់ចោលទាំងអស់ ចម្លងកូដខាងក្រោមយកទៅបិទភ្ជាប់ (Paste) រួចចុច <b>Save (Ctrl+S)</b></li>
+      <li>ជ្រើសរើស <code>setupTemplate</code> រួចចុច <b>Run (ដំណើរការ ▶)</b> ដើម្បីបង្កើត Template ស្អាត Font <b>Khmer OS Siemreap</b>!</li>
+      <li>ចុច <b>ដាក់ឱ្យប្រើ (Deploy)</b> ➔ <b>ការដាក់ឱ្យប្រើថ្មី (New deployment)</b> ➔ ជ្រើស <b>Web app</b> ➔ អ្នកណាអាចចូលប្រើបាន: <b>អ្នកណាក៏បាន (Anyone)</b> ➔ Deploy រួចចម្លង Web App URL មកដាក់ក្នុងប្រអប់ខាងលើ!</li>
+    </ol>
+    <div style="margin-top:8px;display:flex;justify-content:space-between;align-items:center">
+      <span style="font-weight:700">Apps Script Code:</span>
+      <button type="button" class="btn sm" id="btnCopyScript">📋 ចម្លងកូដ (Copy Code)</button>
+    </div>
+    <div class="code-area" id="scriptBox"></div>
+  </div>
+
+  <div class="foot">
+    <button type="button" class="btn" id="gClose">រួចរាល់ (Done)</button>
+  </div>
+</dialog>
+
+<!-- Delete Confirm Dialog -->
+<dialog id="dDel">
+  <h2>តើអ្នកពិតជាចង់លុបទិន្នន័យនេះមែនទេ?</h2><p class="sub" id="delTxt"></p>
+  <div class="foot">
+    <button class="btn" id="delNo">រក្សាទុក</button>
+    <button class="btn pri" id="delYes" style="background:var(--danger);border-color:var(--danger);color:#fff">លុបចោល</button>
+  </div>
+</dialog>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(function(){
+var KEY = "wedding-records-siemreap-v2", $ = function(i){ return document.getElementById(i); };
+var data = [], sort = { k: "no", d: -1 }, editId = null, delId = null;
+
+var GS_URL_KEY = KEY + "-gs-web-app-url";
+var GS_AUTOSYNC_KEY = KEY + "-gs-autosync";
+var USER_KEY = KEY + "-user-id";
+
+var DEFAULT_GS_URL = "https://script.google.com/macros/s/AKfycbygo7FujFcI9Zzd8IoAoGYg2a_0EAiZfz6sCC_WhbtQORIcfjAK1VX-em7FUTz4Y113-w/exec";
+var gsUrl = localStorage.getItem(GS_URL_KEY) || DEFAULT_GS_URL;
+var gsAutoSync = localStorage.getItem(GS_AUTOSYNC_KEY) !== "false";
+var currentUser = localStorage.getItem(USER_KEY) || "User 1";
+if (!["User 1", "User 2", "User 3", "User 4"].includes(currentUser)) currentUser = "User 1";
+$("selUser").value = currentUser;
+
+try {
+  data = JSON.parse(localStorage.getItem(KEY) || "[]");
+} catch(e) { data = []; }
+if (!Array.isArray(data)) data = [];
+
+function save(){
+  try { localStorage.setItem(KEY, JSON.stringify(data)); } catch(e){}
+}
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+function fmt(n){ return Number(n||0).toLocaleString(undefined, { minimumFractionDigits: (n % 1 === 0 ? 0 : 2), maximumFractionDigits: 2 }); }
+function esc(s){ return String(s == null ? "" : s).replace(/[&<>"]/g, function(c){ return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+
+function toast(m, k){
+  var t = $("toast");
+  t.textContent = (k === "ok" ? "✓ " : (k === "err" ? "✕ " : "")) + m;
+  t.className = "toast on" + (k === "err" ? " err" : (k === "warn" ? " warn" : ""));
+  clearTimeout(toast.t);
+  toast.t = setTimeout(function(){ t.classList.remove("on"); }, 3500);
+}
+
+$("selUser").onchange = function(){
+  currentUser = $("selUser").value;
+  localStorage.setItem(USER_KEY, currentUser);
+  toast("បានប្តូរទៅ៖ " + currentUser, "ok");
+};
+
+function updateSyncBadge(){
+  if(gsUrl){
+    $("syncBadge").className = "badge-status on";
+    $("syncBadge").innerHTML = '<span class="pulse-dot"></span> Real-Time Syncing';
+    $("syncText").textContent = "3-4 នាក់កំពុងភ្ជាប់ជាមួយ Google Sheet";
+  } else {
+    $("syncBadge").className = "badge-status off";
+    $("syncBadge").innerHTML = 'Offline (មិនទាន់ភ្ជាប់)';
+    $("syncText").textContent = "ចុច Google Sheets Sync ដើម្បីភ្ជាប់ Real-Time";
+  }
+}
+
+function view(){
+  var q = $("q").value.trim().toLowerCase();
+  var fc = $("fc").value, fv = $("fv").value, cu = $("fcur").value;
+  var mn = parseFloat($("pmin").value), mx = parseFloat($("pmax").value);
+
+  var r = data.filter(function(x){
+    return (!fc || x.commune === fc) &&
+           (!fv || x.village === fv) &&
+           (!cu || (x.currency || "USD") === cu) &&
+           (isNaN(mn) || x.price >= mn) &&
+           (isNaN(mx) || x.price <= mx) &&
+           (!q || [x.name, x.village, x.commune, x.note, x.user].join(" ").toLowerCase().indexOf(q) > -1);
+  });
+
+  r.sort(function(a, b){
+    var A = a[sort.k], B = b[sort.k];
+    if (sort.k === "price") {
+      var ca = a.currency || "USD", cb = b.currency || "USD";
+      return (ca === cb ? a.price - b.price : (ca === "USD" ? -1 : 1)) * sort.d;
+    }
+    if (sort.k === "no") {
+      return ((a.no || 0) - (b.no || 0)) * sort.d;
+    }
+    return String(A || "").localeCompare(String(B || "")) * sort.d;
+  });
+
+  return r;
+}
+
+function cleanUser(u){
+  return String(u || "User 1")
+    .replace(/តុ\s*[១-៤]\s*\((User\s*\d)\)/i, "$1")
+    .replace(/តុ\s*១/g, "User 1").replace(/តុ\s*២/g, "User 2")
+    .replace(/តុ\s*៣/g, "User 3").replace(/តុ\s*៤/g, "User 4");
+}
+
+function render(){
+  [["fc", "commune", "ឃុំទាំងអស់ (All communes)"], ["fv", "village", "ភូមិទាំងអស់ (All villages)"]].forEach(function(a){
+    var cs = [...new Set(data.map(function(x){ return x[a[1]]; }).filter(Boolean))].sort();
+    var cur = $(a[0]).value;
+    $(a[0]).innerHTML = '<option value="">' + a[2] + '</option>' + cs.map(function(c){
+      return '<option' + (c === cur ? " selected" : "") + ' value="' + esc(c) + '">' + esc(c) + '</option>';
+    }).join("");
+  });
+
+  var r = view(), tu = 0, tk = 0;
+  r.forEach(function(x){
+    if (x.currency === "KHR") tk += x.price;
+    else tu += x.price;
+  });
+
+  $("tb").innerHTML = r.map(function(x, idx){
+    var moneyStr = x.currency === "KHR" ? fmt(x.price) + " ៛" : "$" + fmt(x.price);
+    return '<tr>' +
+      '<td style="color:var(--muted)">' + (x.no || (r.length - idx)) + '</td>' +
+      '<td><b>' + esc(x.name) + '</b></td>' +
+      '<td>' + esc(x.village) + '</td>' +
+      '<td>' + esc(x.commune) + '</td>' +
+      '<td class="n"><b>' + moneyStr + '</b></td>' +
+      '<td><span class="user-tag">' + esc(cleanUser(x.user)) + '</span></td>' +
+      '<td class="note">' + esc(x.note) + '</td>' +
+      '<td class="act"><button class="btn sm" data-e="' + x.id + '">កែប្រែ</button> <button class="btn sm del" data-d="' + x.id + '">លុប</button></td>' +
+    '</tr>';
+  }).join("");
+
+  $("empty").hidden = r.length > 0;
+  $("sTotal").textContent = "$" + fmt(tu);
+  $("sKhr").textContent = fmt(tk) + " ៛";
+  $("sCount").textContent = r.length;
+  updateSyncBadge();
+}
+
+function openForm(id){
+  editId = id;
+  var x = data.find(function(d){ return d.id === id; }) || { name: "", village: "", commune: "", price: "", currency: "USD", note: "" };
+  $("fT").textContent = id ? "កែប្រែទិន្នន័យ" : "កត់ចំណងដៃថ្មី";
+  $("fSave").textContent = id ? "រក្សាទុកការកែប្រែ" : "រក្សាទុក និងកត់បន្ត (Save)";
+  $("iName").value = x.name;
+  $("iVil").value = x.village;
+  $("iCom").value = x.commune;
+  $("iPrice").value = x.price;
+  $("iCur").value = x.currency || "USD";
+  $("iNote").value = x.note || "";
+  $("dForm").showModal();
+  $("iName").focus();
+}
+
+// REAL-TIME AUTO SEND RECORD TO GOOGLE SHEETS
+function sendRecordToGoogleSheet(rec){
+  if(!gsUrl) return;
+  fetch(gsUrl, {
+    method: "POST",
+    mode: "no-cors",
+    headers: { "Content-Type": "text/plain" },
+    body: JSON.stringify(rec)
+  }).then(function(){
+    toast("✓ បានរក្សាទុក និង Real-time ចូល Google Sheet: " + rec.name, "ok");
+  }).catch(function(err){
+    console.error("GS sync error:", err);
+    toast("បានរក្សាទុកក្នុងកុំព្យូទ័រ ប៉ុន្តែបាត់បង់ការភ្ជាប់ Google Sheet", "warn");
+  });
+}
+
+$("f").addEventListener("submit", function(e){
+  e.preventDefault();
+  var o = {
+    name: $("iName").value.trim(),
+    village: $("iVil").value.trim(),
+    commune: $("iCom").value.trim(),
+    price: parseFloat($("iPrice").value) || 0,
+    currency: $("iCur").value,
+    note: $("iNote").value.trim(),
+    user: currentUser,
+    timestamp: new Date().toLocaleString()
+  };
+
+  if (editId) {
+    var i = data.findIndex(function(d){ return d.id === editId; });
+    var target = data[i];
+    data[i] = Object.assign({ id: editId, no: target.no }, o);
+    save();
+    render();
+    toast("បានកែប្រែ៖ " + o.name, "ok");
+    $("dForm").close();
+
+    if (gsUrl && target && target.no) {
+      fetch(gsUrl, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "text/plain" },
+        body: JSON.stringify(Object.assign({ action: "update", no: target.no }, o))
+      });
+    }
+  } else {
+    o.id = uid();
+    o.no = data.length + 1;
+    data.unshift(o);
+    toast("បានបន្ថែម៖ " + o.name + " (" + (o.currency === "KHR" ? fmt(o.price) + " ៛" : "$" + fmt(o.price)) + ")", "ok");
+    
+    if (gsUrl && gsAutoSync) {
+      sendRecordToGoogleSheet(o);
+    }
+    
+    // Quick reset for fast continuous input
+    $("iName").value = "";
+    $("iPrice").value = "";
+    $("iNote").value = "";
+    $("iName").focus();
+  }
+  save();
+  render();
+});
+
+$("fCancel").onclick = $("fX").onclick = function(){ $("dForm").close(); };
+$("bAdd").onclick = function(){ openForm(null); };
+
+$("tb").addEventListener("click", function(e){
+  var b = e.target.closest("button");
+  if (!b) return;
+  if (b.dataset.e) openForm(b.dataset.e);
+  if (b.dataset.d) {
+    delId = b.dataset.d;
+    var x = data.find(function(d){ return d.id === delId; });
+    $("delTxt").textContent = x.name + " · " + (x.currency === "KHR" ? fmt(x.price) + " ៛" : "$" + fmt(x.price));
+    $("dDel").showModal();
+  }
+});
+$("delNo").onclick = function(){ $("dDel").close(); };
+$("delYes").onclick = function(){
+  var target = data.find(function(d){ return d.id === delId; });
+  if (target && target.no && gsUrl) {
+    fetch(gsUrl, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify({ action: "delete", no: target.no })
+    });
+  }
+  data = data.filter(function(d){ return d.id !== delId; });
+  save();
+  render();
+  $("dDel").close();
+  toast("បានលុបទិន្នន័យរួចរាល់");
+};
+
+document.querySelector("thead").addEventListener("click", function(e){
+  var k = e.target.dataset.k;
+  if (!k) return;
+  sort = sort.k === k ? { k: k, d: -sort.d } : { k: k, d: 1 };
+  render();
+});
+
+$("q").oninput = render;
+$("fc").onchange = render;
+["fv", "fcur", "pmin", "pmax"].forEach(function(i){ $(i).oninput = $(i).onchange = render; });
+$("fClear").onclick = function(){
+  ["q", "fv", "fc", "fcur", "pmin", "pmax"].forEach(function(i){ $(i).value = ""; });
+  render();
+};
+
+// 1-CLICK COPY FOR GOOGLE SHEETS
+$("bCopySheet").onclick = function(){
+  if (data.length === 0) {
+    toast("មិនទាន់មានទិន្នន័យដើម្បីចម្លងទេ!", "warn");
+    return;
+  }
+  var H = ["ល.រ (No.)", "ឈ្មោះ (Name)", "ភូមិ (Village)", "ឃុំ / សង្កាត់ (Commune)", "ចំនួនទឹកប្រាក់ (Amount)", "រូបិយប័ណ្ណ (Currency)", "ចំណាំ (Note)", "អ្នកកត់ត្រា (Recorder)", "កាលបរិច្ឆេទ (Date)"];
+  var lines = [H.join("\t")];
+  view().forEach(function(x, idx){
+    lines.push([
+      idx + 1,
+      x.name || "",
+      x.village || "",
+      x.commune || "",
+      x.price || 0,
+      x.currency || "USD",
+      x.note || "",
+      x.user || "User",
+      x.timestamp || ""
+    ].join("\t"));
+  });
+  navigator.clipboard.writeText(lines.join("\n")).then(function(){
+    toast("✓ បានចម្លងទិន្នន័យ! ចូល Google Sheet ចុច Cell A5 រួចចុច Ctrl+V (Copied!)", "ok");
+  }).catch(function(){
+    toast("Could not copy to clipboard", "warn");
+  });
+};
+
+// =======================================================================
+// PROFESSIONAL EXCEL EXPORT USING EXCELJS WITH "Khmer OS Siemreap" FONT
+// =======================================================================
+async function exportStyledExcel(records, filename){
+  try {
+    if (!window.ExcelJS) {
+      toast("Excel library is loading, please try again in a second", "warn");
+      return;
+    }
+    var wb = new ExcelJS.Workbook();
+    wb.creator = 'Village Records';
+    var sheet = wb.addWorksheet('Wedding Gifts', {
+      views: [{ state: 'frozen', ySplit: 5 }]
+    });
+
+    var FONT_NAME = 'Khmer OS Siemreap';
+
+    // Title Banner
+    sheet.mergeCells('A1:I1');
+    var title = sheet.getCell('A1');
+    title.value = 'សៀវភៅកត់ត្រាចំណងដៃអាពាហ៍ពិពាហ៍ · WEDDING GIFT REGISTRY';
+    title.font = { name: FONT_NAME, size: 14, bold: true, color: { argb: 'FFFFFFFF' } };
+    title.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0B8F6A' } };
+    title.alignment = { horizontal: 'center', vertical: 'middle' };
+    sheet.getRow(1).height = 42;
+    sheet.getRow(2).height = 12;
+
+    // KPI Summary Cards
+    // Total USD
+    sheet.mergeCells('B3:C3');
+    var b3 = sheet.getCell('B3');
+    b3.value = 'សរុបដុល្លារ (Total USD)';
+    b3.font = { name: FONT_NAME, size: 10, bold: true, color: { argb: 'FF475569' } };
+    b3.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFECFDF5' } };
+    b3.alignment = { horizontal: 'center', vertical: 'middle' };
+
+    sheet.mergeCells('B4:C4');
+    var b4 = sheet.getCell('B4');
+    b4.value = { formula: 'IFERROR(SUMIF(F6:F1000, "USD", E6:E1000), 0)' };
+    b4.numFmt = '$#,##0.00';
+    b4.font = { name: FONT_NAME, size: 16, bold: true, color: { argb: 'FF0B8F6A' } };
+    b4.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFECFDF5' } };
+    b4.alignment = { horizontal: 'center', vertical: 'middle' };
+
+    // Total KHR
+    sheet.mergeCells('D3:E3');
+    var d3 = sheet.getCell('D3');
+    d3.value = 'សរុបរៀល (Total KHR)';
+    d3.font = { name: FONT_NAME, size: 10, bold: true, color: { argb: 'FF475569' } };
+    d3.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF8FAFC' } };
+    d3.alignment = { horizontal: 'center', vertical: 'middle' };
+
+    sheet.mergeCells('D4:E4');
+    var d4 = sheet.getCell('D4');
+    d4.value = { formula: 'IFERROR(SUMIF(F6:F1000, "KHR", E6:E1000), 0)' };
+    d4.numFmt = '#,##0 "៛"';
+    d4.font = { name: FONT_NAME, size: 16, bold: true, color: { argb: 'FF1E293B' } };
+    d4.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF8FAFC' } };
+    d4.alignment = { horizontal: 'center', vertical: 'middle' };
+
+    // Total Guests
+    sheet.mergeCells('F3:G3');
+    var f3 = sheet.getCell('F3');
+    f3.value = 'ចំនួនភ្ញៀវសរុប (Total Guests)';
+    f3.font = { name: FONT_NAME, size: 10, bold: true, color: { argb: 'FF475569' } };
+    f3.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFECFDF5' } };
+    f3.alignment = { horizontal: 'center', vertical: 'middle' };
+
+    sheet.mergeCells('F4:G4');
+    var f4 = sheet.getCell('F4');
+    f4.value = { formula: 'IFERROR(COUNTA(B6:B1000), 0)' };
+    f4.numFmt = '#,##0';
+    f4.font = { name: FONT_NAME, size: 16, bold: true, color: { argb: 'FF0B8F6A' } };
+    f4.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFECFDF5' } };
+    f4.alignment = { horizontal: 'center', vertical: 'middle' };
+
+    sheet.getRow(3).height = 20;
+    sheet.getRow(4).height = 28;
+
+    var thinBorder = {
+      top: { style: 'thin', color: { argb: 'FFCBD5E1' } },
+      left: { style: 'thin', color: { argb: 'FFCBD5E1' } },
+      bottom: { style: 'thin', color: { argb: 'FFCBD5E1' } },
+      right: { style: 'thin', color: { argb: 'FFCBD5E1' } }
+    };
+
+    ['B3', 'C3', 'B4', 'C4', 'D3', 'E3', 'D4', 'E4', 'F3', 'G3', 'F4', 'G4'].forEach(function(ref){
+      sheet.getCell(ref).border = thinBorder;
+    });
+
+    // Set column widths directly (DO NOT use sheet.columns which overwrites Row 1)
+    var colWidths = [8, 25, 18, 18, 16, 12, 25, 14, 22];
+    colWidths.forEach(function(w, i){
+      sheet.getColumn(i + 1).width = w;
+    });
+
+    // Table Headers explicitly on Row 5
+    var row5 = sheet.getRow(5);
+    row5.values = [
+      'ល.រ (No.)',
+      'ឈ្មោះអ្នកចងដៃ (Guest Name)',
+      'ភូមិ (Village)',
+      'ឃុំ / សង្កាត់ (Commune)',
+      'ចំនួនទឹកប្រាក់ (Amount)',
+      'រូបិយប័ណ្ណ (Currency)',
+      'ចំណាំ (Note)',
+      'អ្នកកត់ត្រា (Recorder)',
+      'កាលបរិច្ឆេទ (Recorded Time)'
+    ];
+    row5.height = 36;
+    for (var c = 1; c <= 9; c++) {
+      var cell = row5.getCell(c);
+      cell.font = { name: FONT_NAME, size: 10, bold: true, color: { argb: 'FFFFFFFF' } };
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF12202E' } };
+      cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+      cell.border = thinBorder;
+    }
+
+    // Populate Rows
+    records.forEach(function(r, idx){
+      var rowNum = 6 + idx;
+      var row = sheet.getRow(rowNum);
+      row.values = [
+        idx + 1,
+        r.name || '',
+        r.village || '',
+        r.commune || '',
+        parseFloat(r.price) || 0,
+        r.currency || 'USD',
+        r.note || '',
+        r.user || 'User 1',
+        r.timestamp || ''
+      ];
+      row.height = 24;
+
+      var bgArgb = idx % 2 === 0 ? 'FFFFFFFF' : 'FFF8FAFC';
+      for (var c = 1; c <= 9; c++) {
+        var item = row.getCell(c);
+        item.font = { name: FONT_NAME, size: 10.5 };
+        item.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgArgb } };
+        item.border = thinBorder;
+
+        if (c === 1 || c === 6 || c === 8 || c === 9) {
+          item.alignment = { horizontal: 'center', vertical: 'middle' };
+        } else if (c === 5) {
+          item.alignment = { horizontal: 'right', vertical: 'middle' };
+          item.numFmt = '#,##0.00';
+        } else {
+          item.alignment = { horizontal: 'left', vertical: 'middle' };
+        }
+      }
+    });
+
+    var buffer = await wb.xlsx.writeBuffer();
+    var blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function(){
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 200);
+    toast("✓ បានទាញយកឯកសារ Excel (Khmer OS Siemreap): " + filename, "ok");
+  } catch (err) {
+    console.error("Export Excel error:", err);
+    toast("Error exporting Excel: " + (err.message || err), "warn");
+  }
+}
+
+$("bXlsx").onclick = function(){
+  exportStyledExcel(view(), "Wedding_Gifts_KhmerOSSiemreap.xlsx");
+};
+
+$("bPdf").onclick = function(){
+  var records = view();
+  if (records.length === 0) {
+    toast("គ្មានទិន្នន័យសម្រាប់ទាញយកទេ (No records to export)!", "warn");
+    return;
+  }
+  toast("⏳ កំពុងទាញយកឯកសារ PDF... (Downloading PDF...)", "ok");
+
+  var tu = 0, tk = 0;
+  records.forEach(function(x){
+    if (x.currency === "KHR") tk += x.price;
+    else tu += x.price;
+  });
+
+  var container = document.createElement("div");
+  container.style.padding = "16px";
+  container.style.fontFamily = "'Khmer OS Siemreap', 'Siemreap', sans-serif";
+  container.style.color = "#12202e";
+  container.style.background = "#ffffff";
+
+  var rowsHtml = records.map(function(x, idx){
+    var pStr = x.currency === "KHR" ? fmt(x.price) + " ៛" : "$" + fmt(x.price);
+    var bg = idx % 2 === 0 ? "#ffffff" : "#f8fafc";
+    return '<tr style="background:' + bg + ';">' +
+      '<td style="padding:7px 8px;border:1px solid #cbd5e1;text-align:center;">' + (idx + 1) + '</td>' +
+      '<td style="padding:7px 8px;border:1px solid #cbd5e1;font-weight:bold;">' + esc(x.name) + '</td>' +
+      '<td style="padding:7px 8px;border:1px solid #cbd5e1;">' + esc(x.village) + '</td>' +
+      '<td style="padding:7px 8px;border:1px solid #cbd5e1;">' + esc(x.commune) + '</td>' +
+      '<td style="padding:7px 8px;border:1px solid #cbd5e1;text-align:right;font-weight:bold;">' + pStr + '</td>' +
+      '<td style="padding:7px 8px;border:1px solid #cbd5e1;text-align:center;">' + esc(cleanUser(x.user)) + '</td>' +
+      '<td style="padding:7px 8px;border:1px solid #cbd5e1;">' + esc(x.note) + '</td>' +
+      '<td style="padding:7px 8px;border:1px solid #cbd5e1;text-align:center;font-size:11px;color:#64748b;">' + esc(x.timestamp) + '</td>' +
+    '</tr>';
+  }).join("");
+
+  container.innerHTML =
+    '<div style="text-align:center;margin-bottom:14px;padding:12px;background:#0b8f6a;color:#ffffff;border-radius:8px;">' +
+      '<h2 style="margin:0;font-size:18px;font-weight:bold;">សៀវភៅកត់ត្រាចំណងដៃអាពាហ៍ពិពាហ៍ · WEDDING GIFT REGISTRY</h2>' +
+      '<p style="margin:4px 0 0;font-size:12px;opacity:0.9;">កាលបរិច្ឆេទ: ' + new Date().toLocaleString() + '</p>' +
+    '</div>' +
+    '<div style="display:flex;gap:12px;margin-bottom:14px;text-align:center;">' +
+      '<div style="flex:1;background:#ecfdf5;border:1px solid #cbd5e1;border-radius:8px;padding:8px;"><b style="display:block;font-size:16px;color:#0b8f6a;">$' + fmt(tu) + '</b><span style="font-size:11px;color:#475569;">សរុបដុល្លារ (Total USD)</span></div>' +
+      '<div style="flex:1;background:#f8fafc;border:1px solid #cbd5e1;border-radius:8px;padding:8px;"><b style="display:block;font-size:16px;color:#1e293b;">' + fmt(tk) + ' ៛</b><span style="font-size:11px;color:#475569;">សរុបរៀល (Total KHR)</span></div>' +
+      '<div style="flex:1;background:#ecfdf5;border:1px solid #cbd5e1;border-radius:8px;padding:8px;"><b style="display:block;font-size:16px;color:#0b8f6a;">' + records.length + '</b><span style="font-size:11px;color:#475569;">ចំនួនភ្ញៀវសរុប (Total Guests)</span></div>' +
+    '</div>' +
+    '<table style="width:100%;border-collapse:collapse;font-size:12px;">' +
+      '<thead>' +
+        '<tr style="background:#12202e;color:#ffffff;">' +
+          '<th style="padding:8px;border:1px solid #12202e;width:40px;">ល.រ</th>' +
+          '<th style="padding:8px;border:1px solid #12202e;">ឈ្មោះអ្នកចងដៃ</th>' +
+          '<th style="padding:8px;border:1px solid #12202e;">ភូមិ</th>' +
+          '<th style="padding:8px;border:1px solid #12202e;">ឃុំ / សង្កាត់</th>' +
+          '<th style="padding:8px;border:1px solid #12202e;text-align:right;">ចំនួនទឹកប្រាក់</th>' +
+          '<th style="padding:8px;border:1px solid #12202e;">អ្នកកត់ត្រា</th>' +
+          '<th style="padding:8px;border:1px solid #12202e;">ចំណាំ</th>' +
+          '<th style="padding:8px;border:1px solid #12202e;">កាលបរិច្ឆេទ</th>' +
+        '</tr>' +
+      '</thead>' +
+      '<tbody>' + rowsHtml + '</tbody>' +
+    '</table>';
+
+  var opt = {
+    margin: [8, 8, 8, 8],
+    filename: 'Wedding_Gift_Records.pdf',
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true, letterRendering: true },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+  };
+
+  if (window.html2pdf) {
+    html2pdf().set(opt).from(container).save().then(function(){
+      toast("✓ បានទាញយកឯកសារ PDF ដោយជោគជ័យ: Wedding_Gift_Records.pdf", "ok");
+    }).catch(function(err){
+      toast("PDF error: " + err.message, "err");
+    });
+  } else {
+    toast("PDF library is not loaded", "err");
+  }
+};
+
+// =======================================================================
+// REAL-TIME SYNCHRONIZATION WITH GOOGLE SHEETS (SINGLE SOURCE OF TRUTH)
+// =======================================================================
+function syncRemoteRecords(remoteRecords){
+  if (!Array.isArray(remoteRecords)) return;
+  
+  // Directly sync with Google Sheet records (No duplicates!)
+  data = remoteRecords.map(function(r, idx){
+    return {
+      id: "gs_" + (r.no || (idx + 1)),
+      no: r.no || (idx + 1),
+      name: r.name || "",
+      village: r.village || "",
+      commune: r.commune || "",
+      price: parseFloat(r.price) || 0,
+      currency: r.currency || "USD",
+      note: r.note || "",
+      user: cleanUser(r.user),
+      timestamp: r.timestamp || ""
+    };
+  });
+  save();
+  render();
+}
+
+var pollTimer = null;
+function startRealtimePolling(){
+  if (pollTimer) clearInterval(pollTimer);
+  if (!gsUrl) return;
+
+  pollTimer = setInterval(function(){
+    if (document.hidden) return; // skip if tab is in background
+    fetch(gsUrl + "?action=read")
+      .then(function(res){ return res.json(); })
+      .then(function(res){
+        if (res.status === "success" && Array.isArray(res.records)) {
+          syncRemoteRecords(res.records);
+        }
+      })
+      .catch(function(err){});
+  }, 3500);
+}
+
+// Google Sheets Modal Handlers
+var APPS_SCRIPT_CODE = `function setupTemplate() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getActiveSheet();
+  sheet.setName("Wedding Gifts");
+  sheet.clear();
+  sheet.setFrozenRows(5);
+  sheet.getRange("A1:I1000").setFontFamily("Khmer OS Siemreap");
+  sheet.setColumnWidth(1, 60); sheet.setColumnWidth(2, 200); sheet.setColumnWidth(3, 150);
+  sheet.setColumnWidth(4, 150); sheet.setColumnWidth(5, 130); sheet.setColumnWidth(6, 110);
+  sheet.setColumnWidth(7, 230); sheet.setColumnWidth(8, 130); sheet.setColumnWidth(9, 160);
+
+  var titleRange = sheet.getRange("A1:I1");
+  titleRange.merge().setValue("សៀវភៅកត់ត្រាចំណងដៃអាពាហ៍ពិពាហ៍ · WEDDING GIFT REGISTRY");
+  titleRange.setBackground("#0b8f6a").setFontColor("#ffffff").setFontSize(15).setFontWeight("bold").setHorizontalAlignment("center").setVerticalAlignment("middle");
+  sheet.setRowHeight(1, 46);
+
+  sheet.getRange("B3:C3").merge().setValue("សរុបដុល្លារ (Total USD)").setFontWeight("bold").setFontColor("#475569").setFontSize(11).setHorizontalAlignment("center").setBackground("#ecfdf5");
+  sheet.getRange("B4:C4").merge().setFormula('=IFERROR(SUMIF(F6:F, "USD", E6:E), 0)').setFontWeight("bold").setFontSize(17).setFontColor("#0b8f6a").setHorizontalAlignment("center").setNumberFormat("$#,##0.00").setBackground("#ecfdf5");
+
+  sheet.getRange("D3:E3").merge().setValue("សរុបរៀល (Total KHR)").setFontWeight("bold").setFontColor("#475569").setFontSize(11).setHorizontalAlignment("center").setBackground("#f8fafc");
+  sheet.getRange("D4:E4").merge().setFormula('=IFERROR(SUMIF(F6:F, "KHR", E6:E), 0)').setFontWeight("bold").setFontSize(17).setFontColor("#1e293b").setHorizontalAlignment("center").setNumberFormat('#,##0 "៛"').setBackground("#f8fafc");
+
+  sheet.getRange("F3:G3").merge().setValue("ចំនួនភ្ញៀវសរុប (Total Guests)").setFontWeight("bold").setFontColor("#475569").setFontSize(11).setHorizontalAlignment("center").setBackground("#ecfdf5");
+  sheet.getRange("F4:G4").merge().setFormula('=IFERROR(COUNTA(B6:B), 0)').setFontWeight("bold").setFontSize(17).setFontColor("#0b8f6a").setHorizontalAlignment("center").setNumberFormat('#,##0').setBackground("#ecfdf5");
+
+  sheet.getRange("A5:I5").setValues([["ល.រ\\n(No.)", "ឈ្មោះអ្នកចងដៃ\\n(Guest Name)", "ភូមិ\\n(Village)", "ឃុំ / សង្កាត់\\n(Commune)", "ចំនួនទឹកប្រាក់\\n(Amount)", "រូបិយប័ណ្ណ\\n(Currency)", "ចំណាំ\\n(Note)", "អ្នកកត់ត្រា\\n(Recorder)", "កាលបរិច្ឆេទ\\n(Recorded Time)"]])
+    .setBackground("#12202e").setFontColor("#ffffff").setFontWeight("bold").setFontSize(11).setHorizontalAlignment("center").setVerticalAlignment("middle");
+  sheet.setRowHeight(5, 42);
+
+  var rule = SpreadsheetApp.newDataValidation().requireValueInList(["USD", "KHR"], true).build();
+  sheet.getRange("F6:F1000").setDataValidation(rule);
+  SpreadsheetApp.getUi().alert("✅ បានបង្កើតទម្រង់គំរូ Font 'Khmer OS Siemreap' ជោគជ័យ!");
+}
+
+function doPost(e) {
+  var lock = LockService.getScriptLock();
+  try { lock.waitLock(30000); } catch(err){ return createResp({status:"error",message:"Busy"}); }
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheet = ss.getSheetByName("Wedding Gifts") || ss.getActiveSheet();
+    var data = {};
+    try { data = JSON.parse(e.postData.contents); } catch(err){ data = e.parameter || {}; }
+    var records = Array.isArray(data.records) ? data.records : (data.name ? [data] : []);
+    var startRow = Math.max(6, sheet.getLastRow() + 1);
+    var rows = [];
+    var now = Utilities.formatDate(new Date(), Session.getScriptTimeZone() || "Asia/Phnom_Penh", "yyyy-MM-dd HH:mm:ss");
+    for (var i = 0; i < records.length; i++) {
+      var r = records[i];
+      rows.push([(startRow - 5) + i, r.name||"", r.village||"", r.commune||"", parseFloat(r.price)||0, (r.currency||"USD").toUpperCase(), r.note||"", r.user||"User", r.timestamp||now]);
+    }
+    if (rows.length > 0) {
+      sheet.getRange(startRow, 1, rows.length, 9).setValues(rows);
+      sheet.getRange(startRow, 1, rows.length, 9).setFontFamily("Khmer OS Siemreap");
+    }
+    return createResp({status:"success", count:rows.length});
+  } catch(err){ return createResp({status:"error", message:err.toString()}); }
+  finally { lock.releaseLock(); }
+}
+
+function doGet(e) {
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheet = ss.getSheetByName("Wedding Gifts") || ss.getActiveSheet();
+    var lastRow = sheet.getLastRow();
+    if (lastRow < 6) return createResp({status:"success", records:[]});
+    var data = sheet.getRange(6, 1, lastRow - 5, 9).getValues();
+    var records = [];
+    for (var i = 0; i < data.length; i++) {
+      var row = data[i];
+      if (!row[1] && !row[4]) continue;
+      records.push({id:"gs_"+(i+1), no:row[0], name:String(row[1]||""), village:String(row[2]||""), commune:String(row[3]||""), price:parseFloat(row[4])||0, currency:String(row[5]||"USD"), note:String(row[6]||""), user:String(row[7]||"User"), timestamp:String(row[8]||"")});
+    }
+    return createResp({status:"success", records:records});
+  } catch(err){ return createResp({status:"error", message:err.toString()}); }
+}
+
+function createResp(obj){
+  return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
+}`;
+
+$("scriptBox").textContent = APPS_SCRIPT_CODE;
+
+$("btnCopyScript").onclick = function(){
+  navigator.clipboard.writeText(APPS_SCRIPT_CODE).then(function(){
+    toast("✓ បានចម្លងកូដ Apps Script រួចរាល់!", "ok");
+  }).catch(function(){
+    toast("Please select and copy code manually", "warn");
+  });
+};
+
+$("bGoogle").onclick = function(){
+  $("gsUrl").value = gsUrl;
+  $("gsAutoSync").checked = gsAutoSync;
+  $("dGoogle").showModal();
+};
+$("gX").onclick = $("gClose").onclick = function(){ $("dGoogle").close(); };
+
+$("gsBtnSaveUrl").onclick = function(){
+  gsUrl = $("gsUrl").value.trim();
+  gsAutoSync = $("gsAutoSync").checked;
+  localStorage.setItem(GS_URL_KEY, gsUrl);
+  localStorage.setItem(GS_AUTOSYNC_KEY, gsAutoSync ? "true" : "false");
+  updateSyncBadge();
+  startRealtimePolling();
+  toast("✓ បានរក្សាទុកការកំណត់! ប្រព័ន្ធ Real-Time ចាប់ផ្តើមដំណើរការ", "ok");
+};
+
+$("gsBtnPush").onclick = function(){
+  var url = $("gsUrl").value.trim() || gsUrl;
+  if (!url) { toast("សូមបញ្ចូល Web App URL ជាមុនសិន", "warn"); return; }
+  if (data.length === 0) { toast("គ្មានទិន្នន័យដើម្បី Push ទេ", "warn"); return; }
+  var btn = $("gsBtnPush");
+  btn.textContent = "⏳ កំពុងបញ្ជូនទៅ Google Sheet...";
+  btn.disabled = true;
+
+  fetch(url, {
+    method: "POST",
+    mode: "no-cors",
+    headers: { "Content-Type": "text/plain" },
+    body: JSON.stringify({ action: "batch_sync", records: data })
+  }).then(function(){
+    btn.textContent = "⬆ បញ្ជូនទិន្នន័យចាស់ទាំងអស់ទៅ Google Sheet (Push All)";
+    btn.disabled = false;
+    toast("✓ បានបញ្ជូន " + data.length + " ទិន្នន័យទៅ Google Sheet!", "ok");
+  }).catch(function(err){
+    btn.textContent = "⬆ បញ្ជូនទិន្នន័យចាស់ទាំងអស់ទៅ Google Sheet (Push All)";
+    btn.disabled = false;
+    toast("បរាជ័យ៖ " + err.message, "err");
+  });
+};
+
+$("gsBtnPull").onclick = function(){
+  var url = $("gsUrl").value.trim() || gsUrl;
+  if (!url) { toast("សូមបញ្ចូល Web App URL ជាមុនសិន", "warn"); return; }
+  var btn = $("gsBtnPull");
+  btn.textContent = "⏳ កំពុងទាញយក...";
+  btn.disabled = true;
+
+  fetch(url)
+    .then(function(res){ return res.json(); })
+    .then(function(res){
+      btn.textContent = "⬇ ទាញយកទិន្នន័យពី Google Sheet មកវិញ (Pull)";
+      btn.disabled = false;
+      if (res.status === "success" && Array.isArray(res.records)) {
+        syncRemoteRecords(res.records);
+        toast("✓ បានទាញយកទិន្នន័យពី Google Sheet រួចរាល់", "ok");
+      }
+    })
+    .catch(function(err){
+      btn.textContent = "⬇ ទាញយកទិន្នន័យពី Google Sheet មកវិញ (Pull)";
+      btn.disabled = false;
+      toast("Error: " + err.message, "err");
+    });
+};
+
+render();
+fetch(gsUrl + "?action=read").then(function(r){ return r.json(); }).then(function(res){
+  if (res.status === "success" && Array.isArray(res.records)) syncRemoteRecords(res.records);
+}).catch(function(){});
+startRealtimePolling();
+})();
+</script>
+</body>
+</html>
